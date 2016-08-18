@@ -46,4 +46,3 @@ For coordinates-wise montages of arbitrary number of ROIs:
 19) Choose the parent directory of the text file you are using.
     (eg. the one containing the .tif files you want to stitch)
 20) Wait and then HAVE FUN! 
-
