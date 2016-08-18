@@ -1,0 +1,49 @@
+How to use Stitching macro (Antonio Trabalza)
+============================
+For GRID scans acquired by Prairie system:
+
+
+1)  Click on: Plugins > Stitching > Grid/Collection stitching.
+2)  Select Type > Positions from file.
+3)  Select Order > Defined by image metadata.
+4)  Click OK, a dialog will appear.  
+5)  Browse to the .xml in the grid folder.
+6)  Select Fusion method > Max. Intensity, 
+    choose Linear Blending only for publication/presentation figures.
+7)  Leave the default values for the thresholds.
+8)  Tick Add tiles as ROIs based on your requirements.
+9)  Untick Compute overlap - IMPORTANT - you trust the coordinate in the file. 
+10) Leave all unticked except for: Invert Y coordinates.
+
+11) Click OK to start the stitching process.
+
+The duration of the process varies depending on the size of the mosaic (number of tiles)
+and on your hardware. Have a break!
+
+
+
+For coordinates-wise montages of arbitrary number of ROIs:
+
+1)  Install one of the "Nostromo" macros that are in this folder (eventually).
+2)  Run it on any given session/timepoint (eg. _a, _b, etc.).
+3)  Wait. If your computer is old/not powerful wit even more.
+    (To have an idea of the progress you can open the "Processed_MAX_Projections" subfolder in your timepoint).
+4)  In FIJI select File > New > TrakEM2 (blank).
+5)  A dialog to select a storage folder will appear. Choose wisely!
+6)  TrackEM2 will open.
+7)  Right click on the black image field.
+8)  Select Import > Import from text file...
+9)  Browse to and select the CoordinatesZ(n).txt file relative to the images that you want to stitch.
+    the macro saves them in the Zoom(n) subfolder of the Stitching_ready_tiffs folder.
+10) A options dialog will appear.
+11) Select Column separator > Comma(,).
+12) Tick Homogenize contrast layer-wise (to improve the LUT).
+13) Click on OK.
+14) The Enhance contrast dialog will appear.
+15) Leave the default 0.4% saturated pixels.
+16) Untick every box (important) and click OK
+18) The Choose source directory dialog will appear.
+19) Choose the parent directory of the text file you are using.
+    (eg. the one containing the .tif files you want to stitch)
+20) Wait and then HAVE FUN! 
+
