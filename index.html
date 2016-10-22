@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Prairie-ultima-iv-image-batch-processing by antoniotrkdz</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Prairie-ultima-iv-image-batch-processing</h1>
+        <h2>FIJI/ImageJ Macro for sorting batches of stacks acquired with Praire Ultima IV two-photon microscopes.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/antoniotrkdz/Prairie-Ultima-IV-image-batch-processing/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/antoniotrkdz/Prairie-Ultima-IV-image-batch-processing/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/antoniotrkdz/Prairie-Ultima-IV-image-batch-processing" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="prairie-ultima-iv-image-batch-processing" class="anchor" href="#prairie-ultima-iv-image-batch-processing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prairie-Ultima-IV-image-batch-processing</h1>
+
+<p>FIJI/ImageJ Macro for sorting batch of stacks acquired from Praire Ultima IV two-photon microscopes.</p>
+
+<p>The macro is needed to sort the stack of images acquired with Praire Ultima IV systems into a useful set of data to be visualised with TrackEM2 FIJI plugin.</p>
+
+<p>To use it simply copy the file into /macro subfolder and install it via the macro drop down menu option "install".</p>
+
+<p>This macro batch processes all the files in a folder and any subfolders in that folder. Use it to process a session/timepoint (_a, _b, etc.). It saves its output in two subfolders called "Processed_Max_Projections" and "Stitching_ready_tiffs" (divided into four zoom subfolders, 40x only). It gets the filename, x, y and z coordinates (together with some other values) from the .xml metadata file in the ROI subfolder and stores these values as a comma separated list text file named "CoordinatesZ(n).txt" in each zoom folder. It  saves the single plane images sequentially, makes the MAX projection, converts all to 8-bit and finally saves them. The dialog at the beginning sets wether to run the StackReg plugin to align the images in the stack and/or to filter them (Median filter pixel value 1). </p>
+
+<p>The vesion 5 does not write the ROI number at the four corners leaving the images unaltered. Please refer to the "How to use Stitching macro.txt" file for a guide on how to use the output of this macro to get 3D mosaics.</p>
+
+<p>The version 6 also writes the zoom value and the ROI number at the four corners of the images ready to be stitched. Please note that it actually draws these information on the image, so in this extent it is "destructive" macro.</p>
+
+<p>Please refer to the "How to use Stitching macro.txt" file for a guide on how to use the output of this macro to get 3D mosaics.</p>
+
+<h1>
+<a id="here-is-the-code-to-be-copy-pasted-to-your-macro-files" class="anchor" href="#here-is-the-code-to-be-copy-pasted-to-your-macro-files" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Here is the code to be copy-pasted to your macro file(s):</h1>
+
+<pre><code>macro "Nostromo no ROI number version" { 
+
+/* "Batch MAX Align and Process Folders and Subfolders" Antonio Trabalza - MRC - 2015
+
+Refer to the individual macro file for more info.
+
+For other kinds of processing,
+edit the processFile() function at the end of this macro.*/
+
+   // requires("1.44e"); // classic ImageJ compatibility.
+   if (nImages() &gt; 0) exit("ERROR ! Before starting, please close all image windows !");
+   // Checks that no image windows are open.
+   srcDir = getDirectory("Choose a Directory ");
+   trgDir = srcDir + "Stitching_ready_tiffs";
+   trgDir2 = srcDir + "Processed_MAX_Projections";
+   if (File.exists(trgDir) || (trgDir2))
+   exit("ERROR ! Destination directories already exist; if you really want, remove them and then run this macro again"); 
+   File.makeDirectory(trgDir);
+   File.makeDirectory(trgDir2);   
+   setBatchMode(true);
+   run("Bio-Formats Macro Extensions");
+   Dialog.create("Options");
+   Dialog.addCheckbox("StackReg", true);
+   Dialog.addCheckbox("Median Filter", true);
+   Dialog.show();
+   align = Dialog.getCheckbox();
+   filter = Dialog.getCheckbox();
+   count = 0;
+   countFiles(srcDir);
+   n = 0;
+   processFiles(srcDir);
+   //print(count+" files processed");
+
+   function countFiles(srcDir) {
+       list = getFileList(srcDir);
+       for (i=0; i&lt;list.length; i++) {
+           if (endsWith(list[i], File.separator))
+               countFiles(""+srcDir+list[i]);
+           else
+               count++;
+       }
+   }
+
+   function processFiles(srcDir) {
+       list = getFileList(srcDir);
+       for (i=0; i&lt;list.length; i++) {
+          if (endsWith(list[i], File.separator))
+              processFiles(""+srcDir+list[i]);
+          else {
+             showProgress(n++, count);
+             path = srcDir+list[i];
+             processFile(path);
+          }
+       }
+   }
+
+   function processFile(path) {
+
+   // zoom value is stored in row 57 as per "1", "2", etc.  
+   // Zoom 1 = microns per pixels: 0.588235294117647
+   // Zoom 2 = microns per pixels: 0.294067245037119
+   // Zoom 3 = microns per pixels: 0.196038609069362
+   // Zoom 4 = microns per pixels: 0.147027323885178
+
+       if (endsWith(path, ".ome.tif")) {
+           id = File.getName(path); 
+       newMAXname = "MAX_" + substring(id,0,indexOf(id,"_Cycle"))+".tif";
+       ROIname = substring(id,(lastIndexOf(id,"-0")+2),indexOf(id,"_Cycle"));
+       //newMAXname ="MAX_" + substring(id,0,lastIndexOf(id,".xml")) +".tif";
+
+       if (!File.exists(trgDir2 + File.separator + newMAXname ) &amp;&amp; !File.exists(trgDir + File.separator + id) {
+           run("Bio-Formats Importer", "open=[" + path + "] color_mode=Default open_all_series view=[Standard ImageJ] stack_order=Default");
+       //run("Image Sequence...", "open=[" + path + "] number=count starting=1 increment=1 scale=100 file=[] or=[] sort");
+       if(nSlices &gt; 1){
+           if (align==true) run("StackReg", "transformation=[Rigid Body]"); // for classic ImageJ compatibility add a space after StackReg.
+
+        // Uses Bio-Formats to print the chosen file's metadata to the Log.
+
+        // !!!!!IMPORTANT!!!!!
+    // It DOESN'T work with Bio-Formats versions 5.1.0 and 5.1.1 !!!
+    // Use either 5.0.8 or 5.1.2 (relased 28 May 2015).
+
+        Ext.setId(path);
+        Ext.getImageCount(imageCount);
+        positionX = newArray(imageCount);
+        positionY = newArray(imageCount);
+        positionZ = newArray(imageCount);
+        used_path = newArray(imageCount);
+
+        Ext.getPixelsPhysicalSizeX(pxsize); //Gets the microns per pixels value.
+
+        //px=toString(pxsize,9); // (DEBUG) max usable decimal positions. 
+        //print(px);
+        //pxf = parseFloat(px);
+
+        zoomDir = newArray("Zoom1", "Zoom2", "Zoom3", "Zoom4+");
+        for (z=0; z&lt;zoomDir.length; z++) {
+            if (!File.exists(trgDir + File.separator + zoomDir[z]))
+                File.makeDirectory(trgDir + File.separator + zoomDir[z]);
+            }
+        for (no=0; no&lt;imageCount; no++) {
+            Ext.getSizeX(sizeX);
+        Ext.getSizeY(sizeY);
+        Ext.getPlanePositionX(positionX[no], no);
+        Ext.getPlanePositionY(positionY[no], no);
+        Ext.getPlanePositionZ(positionZ[no], no);
+        pixsX = (positionX[no]/pxsize); // Conversion of the micron coordinates in pixel coordinates.
+        //invY = (positionY[no] * -1); // Inversion of coordinates.
+        inv_pixsY = ((positionY[no]/pxsize)* -1); // Conversion and Inversion.
+        r_pixsZ = round((positionZ[no]/pxsize)); // Rounding and Conversion.
+        //round_Z = round(positionZ[no]); // Rounding.
+
+        Ext.getUsedFile(no, used_path[no]); // Gets the no'th filename part of this dataset.
+        // Nostromo! truncate the name of the file!
+        used = substring(used_path[no],(lastIndexOf(used_path[no], File.separator)+1),indexOf(used_path[no],".ome.tif")); //Ahoy!
+        setSlice(no + 1);
+        run("Copy");
+        newImage(used, "16-bit Black", sizeX, sizeY, 1);
+        run("Paste");
+
+        //TNC = used + ".tif" + "," + positionX[no] + "," + invY + "," + positionZ[no]; // TrakEM2 output format
+        TNC = used + ".tif" + "," + pixsX + "," + inv_pixsY + "," + r_pixsZ; // TrakEM2 alternative output format
+        //TNC = used + ".tif" + "; ; " + "(" + pixsX + "," + inv_pixsY + "," + round_Z + ")"; //stitching plugin output format
+
+        if (pxsize &gt;= 0.588235) { // coping with unpleasant ImageJ rounding (6 digits) - Zoom1
+            saveAs("TIFF", trgDir + File.separator + zoomDir[0] + File.separator + used + ".tif");
+
+            //tableZ1 = File.open(trgDir + File.separator + zoomDir[0] + File.separator + "CoordinatesZ1.txt");
+            //print(tableZ1,TNC);
+            //File.close(tableZ1);
+
+            // Using the File.open() and print() functions to save to a text file.
+            // The file is closed using File.close(f) or automatically with its equivalent when the macro exits.
+            // Currently only one file can be open at a time.
+
+            tableZ1 = trgDir + File.separator + zoomDir[0] + File.separator + "CoordinatesZ1.txt";
+            File.append(TNC,tableZ1); // Truncated Name Coordinates.
+        }
+        else if (pxsize &gt;= 0.294067) { // Zoom2
+            saveAs("TIFF", trgDir + File.separator + zoomDir[1] + File.separator + used + ".tif");
+            tableZ2 = trgDir + File.separator + zoomDir[1] + File.separator + "CoordinatesZ2.txt";
+            File.append(TNC,tableZ2);
+        }
+        else if (pxsize &gt;= 0.196039) { // Zoom3
+            saveAs("TIFF", trgDir + File.separator + zoomDir[2] + File.separator + used + ".tif");
+            tableZ3 = trgDir + File.separator + zoomDir[2] + File.separator + "CoordinatesZ3.txt";
+            File.append(TNC,tableZ3);
+        }
+        else { // Zoom4+
+            saveAs("TIFF", trgDir + File.separator + zoomDir[3] + File.separator + used + ".tif");
+            tableZ4 = trgDir + File.separator + zoomDir[3] + File.separator + "CoordinatesZ4+.txt";
+            File.append(TNC,tableZ4);
+        }
+        close();
+       }    
+
+       run("Z Project...", "start=1 stop=" + nSlices + " projection=[Max Intensity]");
+       if (filter==true) run("Median...", "radius=1");
+       run("8-bit");
+       saveAs("TIFF", trgDir2 + File.separator + newMAXname);
+        Ext.close();
+        }
+      close();
+      }
+}
+}
+</code></pre>
+
+<p>}</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
