@@ -48,7 +48,7 @@
 <h1>
 <a id="here-is-the-code-to-be-copy-pasted-to-your-macro-files" class="anchor" href="#here-is-the-code-to-be-copy-pasted-to-your-macro-files" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Here is the code to be copy-pasted to your macro file(s):</h1>
 
-<pre><code>macro "Nostromo no ROI number version" { 
+<pre><code>macro "Nostromo no ROI number version" {
 
 /* "Batch MAX Align and Process Folders and Subfolders" Antonio Trabalza - MRC - 2015
 
@@ -64,9 +64,9 @@ edit the processFile() function at the end of this macro.*/
    trgDir = srcDir + "Stitching_ready_tiffs";
    trgDir2 = srcDir + "Processed_MAX_Projections";
    if (File.exists(trgDir) || (trgDir2))
-   exit("ERROR ! Destination directories already exist; if you really want, remove them and then run this macro again"); 
+   exit("ERROR ! Destination directories already exist; if you really want, remove them and then run this macro again");
    File.makeDirectory(trgDir);
-   File.makeDirectory(trgDir2);   
+   File.makeDirectory(trgDir2);
    setBatchMode(true);
    run("Bio-Formats Macro Extensions");
    Dialog.create("Options");
@@ -106,14 +106,14 @@ edit the processFile() function at the end of this macro.*/
 
    function processFile(path) {
 
-   // zoom value is stored in row 57 as per "1", "2", etc.  
+   // zoom value is stored in row 57 as per "1", "2", etc.
    // Zoom 1 = microns per pixels: 0.588235294117647
    // Zoom 2 = microns per pixels: 0.294067245037119
    // Zoom 3 = microns per pixels: 0.196038609069362
    // Zoom 4 = microns per pixels: 0.147027323885178
 
        if (endsWith(path, ".ome.tif")) {
-           id = File.getName(path); 
+           id = File.getName(path);
        newMAXname = "MAX_" + substring(id,0,indexOf(id,"_Cycle"))+".tif";
        ROIname = substring(id,(lastIndexOf(id,"-0")+2),indexOf(id,"_Cycle"));
        //newMAXname ="MAX_" + substring(id,0,lastIndexOf(id,".xml")) +".tif";
@@ -139,7 +139,7 @@ edit the processFile() function at the end of this macro.*/
 
         Ext.getPixelsPhysicalSizeX(pxsize); //Gets the microns per pixels value.
 
-        //px=toString(pxsize,9); // (DEBUG) max usable decimal positions. 
+        //px=toString(pxsize,9); // (DEBUG) max usable decimal positions.
         //print(px);
         //pxf = parseFloat(px);
 
@@ -202,7 +202,7 @@ edit the processFile() function at the end of this macro.*/
             File.append(TNC,tableZ4);
         }
         close();
-       }    
+       }
 
        run("Z Project...", "start=1 stop=" + nSlices + " projection=[Max Intensity]");
        if (filter==true) run("Median...", "radius=1");
@@ -214,12 +214,13 @@ edit the processFile() function at the end of this macro.*/
       }
 }
 }
+}
+
 </code></pre>
 
-<p>}</p>
       </section>
     </div>
 
-    
+
   </body>
 </html>
