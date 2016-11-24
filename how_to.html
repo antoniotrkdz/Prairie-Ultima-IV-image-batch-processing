@@ -1,0 +1,47 @@
+<h2>How to use Stitching macro (Antonio Trabalza)</h2>
+
+<h3>For GRID scans acquired by Prairie system:</h3>
+
+<ol>
+  <li>Click on: Plugins > Stitching > Grid/Collection stitching.</li>
+  <li>Select Type > Positions from file.</li>
+  <li>Select Order > Defined by image metadata.</li>
+  <li>Click OK, a dialog will appear.</li>  
+  <li>Browse to the .xml in the grid folder.</li>
+  <li>Select Fusion method > Max. Intensity, choose Linear Blending only for publication/presentation figures.</li>
+  <li>Leave the default values for the thresholds.</li>
+  <li>Tick Add tiles as ROIs based on your requirements.</li>
+  <li>Untick Compute overlap - IMPORTANT - you trust the coordinate in the file.</li> 
+  <li>Leave all unticked except for: Invert Y coordinates.</li>
+  <li>Click OK to start the stitching process.</li>
+</ol>
+
+<p>The duration of the process varies depending on the size of the mosaic (number of tiles)
+and on your hardware. Have a break!</p>
+<br>
+<h3>For coordinates-wise montages of arbitrary number of ROIs:</h3>
+
+<ol>
+<li>Install one of the "Nostromo" macros that are in this repository (eventually).</li>
+<li>Run it on any given session/timepoint (eg. _a, _b, etc.).</li>
+<li>Wait. If your computer is old/not powerful wait even more.
+    (To have an idea of the progress you can open the "Processed_MAX_Projections" subfolder in your timepoint).</li>
+<li>In FIJI select File > New > TrakEM2 (blank).</li>
+<li>A dialog to select a storage folder will appear. Choose wisely!</li>
+<li>TrackEM2 will open.</li>
+<li>Right click on the black image field.</li>
+<li>Select Import > Import from text file...</li>
+<li>Browse to and select the CoordinatesZ(n).txt file relative to the images that you want to stitch.
+    the macro saves them in the Zoom(n) subfolder of the Stitching_ready_tiffs folder.</li>
+<li>A options dialog will appear.</li>
+<li>Select Column separator > Comma(,).</li>
+<li>Tick Homogenize contrast layer-wise (to improve the LUT).</li>
+<li>Click on OK.</li>
+<li>The Enhance contrast dialog will appear.</li>
+<li>Leave the default 0.4% saturated pixels.</li>
+<li>Untick every box (important) and click OK.</li>
+<li>The Choose source directory dialog will appear.</li>
+<li>Choose the parent directory of the text file you are using.
+    (eg. the one containing the .tif files you want to stitch)</li>
+<li>Wait and then HAVE FUN!</li>
+</ol>
